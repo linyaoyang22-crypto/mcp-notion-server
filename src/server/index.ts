@@ -5,7 +5,7 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import express from "express";
+import { createServer } from "http";
 import {
   CallToolRequest,
   CallToolRequestSchema,
@@ -15,6 +15,7 @@ import { NotionClientWrapper } from "../client/index.js";
 import { filterTools } from "../utils/index.js";
 import * as schemas from "../types/schemas.js";
 import * as args from "../types/args.js";
+
 
 /**
  * Start the MCP server
@@ -327,32 +328,32 @@ export async function startServer(
     };
   });
 
-    if (process.env.MCP_TRANSPORT === "sse") {
-    const app = express();
+  if (process.env.MCP_TRANSPORT === "sse") {
     const port = parseInt(process.env.PORT || "8080");
-
     let transport: SSEServerTransport | null = null;
 
-    app.get("/sse", async (_req: any, res: any) => {
-      transport = new SSEServerTransport("/messages", res);
-      await server.connect(transport);
-    });
-
-    app.post("/messages", async (req: any, res: any) => {
-      if (transport) {
-        await transport.handlePostMessage(req, res);
+    const httpServer = createServer(async (req, res) => {
+      if (req.url === "/sse" && req.method === "GET") {
+        transport = new SSEServerTransport("/messages", res);
+        await server.connect(transport);
+      } else if (req.url?.startsWith("/messages") && req.method === "POST") {
+        if (transport) {
+          await transport.handlePostMessage(req, res);
+        } else {
+          res.writeHead(400);
+          res.end("No active SSE connection");
+        }
       } else {
-        res.status(400).send("No active SSE connection");
+        res.writeHead(200);
+        res.end("MCP Notion SSE Server running");
       }
     });
 
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       console.error(`SSE server running on port ${port}`);
     });
   } else {
     const transport = new StdioServerTransport();
     await server.connect(transport);
   }
-}
-
 }
