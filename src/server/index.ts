@@ -4,6 +4,8 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import express from "express";
 import {
   CallToolRequest,
   CallToolRequestSchema,
@@ -325,6 +327,32 @@ export async function startServer(
     };
   });
 
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+    if (process.env.MCP_TRANSPORT === "sse") {
+    const app = express();
+    const port = parseInt(process.env.PORT || "8080");
+
+    let transport: SSEServerTransport | null = null;
+
+    app.get("/sse", async (_req: any, res: any) => {
+      transport = new SSEServerTransport("/messages", res);
+      await server.connect(transport);
+    });
+
+    app.post("/messages", async (req: any, res: any) => {
+      if (transport) {
+        await transport.handlePostMessage(req, res);
+      } else {
+        res.status(400).send("No active SSE connection");
+      }
+    });
+
+    app.listen(port, () => {
+      console.error(`SSE server running on port ${port}`);
+    });
+  } else {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+  }
+}
+
 }
