@@ -5,7 +5,6 @@ WORKDIR /app
 COPY . .
 
 RUN npm ci --ignore-scripts
-RUN npm install express @types/express
 RUN npm run build
 
 EXPOSE 8080
