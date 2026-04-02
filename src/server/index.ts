@@ -197,11 +197,10 @@ export async function startServer(
   enabledToolsSet: Set<string>,
   enableMarkdownConversion: boolean
 ) {
-    console.error("MCP_TRANSPORT:", process.env.MCP_TRANSPORT);
+  console.error("MCP_TRANSPORT:", process.env.MCP_TRANSPORT);
 
   if (process.env.MCP_TRANSPORT === "http") {
     console.error("Entering HTTP mode...");
-
     const port = parseInt(process.env.PORT || "8080");
     const sessions = new Map<string, StreamableHTTPServerTransport>();
 
@@ -229,7 +228,7 @@ export async function startServer(
           await transport.handleRequest(req, res);
           if (transport.sessionId && !sessions.has(transport.sessionId)) {
             sessions.set(transport.sessionId, transport);
-            
+          }
         } else if (req.method === "GET") {
           if (sessionId && sessions.has(sessionId)) {
             await sessions.get(sessionId)!.handleRequest(req, res);
