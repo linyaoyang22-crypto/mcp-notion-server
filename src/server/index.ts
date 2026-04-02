@@ -197,7 +197,11 @@ export async function startServer(
   enabledToolsSet: Set<string>,
   enableMarkdownConversion: boolean
 ) {
+    console.error("MCP_TRANSPORT:", process.env.MCP_TRANSPORT);
+
   if (process.env.MCP_TRANSPORT === "http") {
+    console.error("Entering HTTP mode...");
+
     const port = parseInt(process.env.PORT || "8080");
     const sessions = new Map<string, StreamableHTTPServerTransport>();
 
