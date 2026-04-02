@@ -17,6 +17,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { startServer } from "./server/index.js";
+console.error("All imports loaded successfully");
 
 // Parse command line arguments
 const argv = yargs(hideBin(process.argv))
@@ -39,6 +40,7 @@ if (process.env.NODE_ENV !== "test" && process.env.VITEST !== "true") {
 }
 
 async function main() {
+  console.error("main() started");
   const notionToken = process.env.NOTION_API_TOKEN;
   const enableMarkdownConversion =
     process.env.NOTION_MARKDOWN_CONVERSION === "true";
