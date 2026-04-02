@@ -225,10 +225,7 @@ export async function startServer(
           await transport.handleRequest(req, res);
           if (transport.sessionId && !sessions.has(transport.sessionId)) {
             sessions.set(transport.sessionId, transport);
-            transport.on("close", () => {
-              if (transport.sessionId) sessions.delete(transport.sessionId);
-            });
-          }
+            
         } else if (req.method === "GET") {
           if (sessionId && sessions.has(sessionId)) {
             await sessions.get(sessionId)!.handleRequest(req, res);
